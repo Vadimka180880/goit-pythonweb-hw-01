@@ -5,8 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-# Single Responsibility Principle: separate class book
-
+# Single Responsibility Principle: 
 class Book:
     def __init__(self, title: str, author: str, year: int) -> None:
         self.title = title
@@ -17,9 +16,8 @@ class Book:
         return f'Title: {self.title}, Author: {self.author}, Year: {self.year}'
 
 
-# Open-Closed Principle: abstraction class library
-
-class AbstractLibrary(ABC):
+# Interface Segregation Principle:
+class LibraryInterface(ABC):
     @abstractmethod
     def add_book(self, book: Book) -> None:
         pass
@@ -33,9 +31,8 @@ class AbstractLibrary(ABC):
         pass
 
 
-# Create book library
-
-class Library(AbstractLibrary):
+# Open-Closed Principle: 
+class Library(LibraryInterface):
     def __init__(self) -> None:
         self._books: List[Book] = []
 
@@ -55,45 +52,49 @@ class Library(AbstractLibrary):
         return self._books
 
 
-# Dependency Inversion Principle:
-
-class LibraryCLI:
-    def __init__(self, library: AbstractLibrary) -> None:
+# Dependency Inversion Principle: 
+class LibraryManager:
+    def __init__(self, library: LibraryInterface) -> None:
         self.library = library
 
-    def run(self) -> None:
-        while True:
-            command = input("Enter command (add, remove, show, exit): ").strip().lower()
+    def add_book(self, title: str, author: str, year: int) -> None:
+        book = Book(title, author, year)
+        self.library.add_book(book)
 
-            if command == "add":
-                title = input("Enter book title: ").strip()
-                author = input("Enter book author: ").strip()
-                year = int(input("Enter book year: ").strip())
-                self.library.add_book(Book(title, author, year))
+    def remove_book(self, title: str) -> None:
+        self.library.remove_book(title)
 
-            elif command == "remove":
-                title = input("Enter book title to remove: ").strip()
-                self.library.remove_book(title)
-
-            elif command == "show":
-                books = self.library.get_books()
-                if books:
-                    for book in books:
-                        logging.info(book)
-                else:
-                    logging.info("Library is empty.")
-
-            elif command == "exit":
-                logging.info("Exiting...")
-                break
-
-            else:
-                logging.info("Invalid command. Please try again.")
+    def show_books(self) -> None:
+        books = self.library.get_books()
+        if books:
+            for book in books:
+                logging.info(book)
+        else:
+            logging.info("Library is empty.")
 
 
 # Usage
-
 if __name__ == "__main__":
     library = Library()
-    cli = LibraryCLI(library)
-    cli.run()
+    manager = LibraryManager(library)
+
+    while True:
+        command = input("Enter command (add, remove, show, exit): ").strip().lower()
+
+        match command:
+            case "add":
+                title = input("Enter book title: ").strip()
+                author = input("Enter book author: ").strip()
+                year = int(input("Enter book year: ").strip())
+                manager.add_book(title, author, year)
+            case "remove":
+                title = input("Enter book title to remove: ").strip()
+                manager.remove_book(title)
+            case "show":
+                manager.show_books()
+            case "exit":
+                logging.info("Exiting...")
+                break
+            case _:
+                logging.info("Invalid command. Please try again.")
+      
